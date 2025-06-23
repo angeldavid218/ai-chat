@@ -26,7 +26,7 @@ function App() {
       console.error(err);
       return;
     }
-    getMessages();
+    await getMessages();
   };
 
   const handleSend = async () => {
