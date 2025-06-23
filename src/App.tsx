@@ -31,18 +31,24 @@ function App() {
 
   const handleSend = async () => {
     setIsLoading(true);
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'o4-mini',
-        messages: [{ role: 'user', content: question }],
-      }),
-    });
-    const data = await response.json();
+    const [response, err] = await safeAwait(
+      fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'o4-mini',
+          messages: [{ role: 'user', content: question }],
+        }),
+      })
+    );
+    if (err || !response?.ok) {
+      console.error(err);
+      return;
+    }
+    const data = await response?.json();
     await addMessage(question, data.choices[0].message.content || '');
     setIsLoading(false);
     setQuestion('');
@@ -123,7 +129,7 @@ function App() {
         <div className="w-full max-w-md">
           <input
             type="text"
-            placeholder="find a message"
+            placeholder="find a question"
             className="w-full p-2 border border-gray-300 rounded-md mt-2"
             onChange={(e) => setSearch(e.target.value)}
           />
